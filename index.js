@@ -1,7 +1,8 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2/promise');
-const consoleTable = require('console.table');
-const { allowedNodeEnvironmentFlags } = require('process');
+const cTable = require('console.table');
+const { firstQuestion } = require('./utils/inquirerFunctions');
+const { allEmployeeQuery, allDepartmentQuery, allRoleQuery, addDepartment, addRole, addEmployee, updateEmployeeRole, viewEmployeesByManager, viewEmployeesByDepartment, deleteEmployee } = require('./utils/queries');
 
 // Create connection to database
 const connection = mysql.createConnection ({
@@ -11,70 +12,42 @@ const connection = mysql.createConnection ({
     port: '/tmp/mysql.sock'
 });
 
-connection.connect((err => {
-    if (err) throw err;
-    console.log('Successfully connected to database!');
-    promptUser();
-}));
-
 const promptUser = () => {
-    inquirer.prompt({
-        type: "list",
-        name: "task",
-        message: "What would you like to do?",
-        choices: [
-            'View Employees',
-            'View Roles',
-            'View Departments',
-            'Add Employee',
-            'Add Role',
-            'Add Department',
-            'Update Employee Role',
-            'Exit'
-        ]
-    })
-    .then(function ({ task }) {
-        switch (task) {
-            case 'View Employees':
-                queryTable('employee', 'SELECT * FROM employee');
+    firstQuestion().then(answer => {
+        switch (answer.choice) {
+            case 'View all employees':
+                allEmployeeQuery();
                 break;
-            case 'View Departments':
-                queryTable('department', `SELECT * FROM department`);
-            case 'View Roles':
-                queryTable("role", `SELECT * FROM role`);
-            case 'Add Employee':
-                addEmployee();
+              case 'View all departments':
+                allDepartmentQuery();
                 break;
-            case 'Add Role':
-                addRole();
+              case 'View all roles':
+                allRoleQuery();
                 break;
-            case 'Add Department':
+              case 'Add department':
                 addDepartment();
                 break;
-            case 'Update Employee Role':
-                updateEmployee();
+              case 'Add role':
+                addRole();
                 break;
-            case 'Exit':
-                connection.end();
+              case 'Add employee':
+                addEmployee();
+                break;
+              case 'Update employee role':
+                updateEmployeeRole();
+                break;
+              case 'View employees by manager':
+                viewEmployeesByManager();
+                break;
+              case 'View employees by department':
+                viewEmployeesByDepartment();
+                break;
+              case 'Delete employee':
+                deleteEmployee();
                 break;
         }
-    })
+    }).catch(err => {if (err) throw err;});
 }
 
-async function queryTable(title, sql) {
-    const [rows, fields] = await connection.execute(sql);
-    console.table(rows);
-    promptUser();
-};
 
-
-
-
-connection.query('SELECT * FROM mytable', (err, result, feilds)=> {
-    if(err) return console.error(err)
-
-    console.log(result)
-
-});
-
-connection.end()
+promptUser();
