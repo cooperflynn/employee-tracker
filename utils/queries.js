@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const cTable = require('console.table');
-const { firstQuestion, addDepartmentQuestions, addRoleQuestions, updateRoleQuestions, viewByManagerQuestions, viewByDepartmentQuestions, deleteEmployeeQuestions } = require ('./inquirerFunctions');
+const emoji = require('node-emoji');
+const { firstQuestion, addDepartmentQuestions, addRoleQuestions, addEmployeeQuestions, updateRoleQuestions, viewByManagerQuestions, viewByDepartmentQuestions, deleteEmployeeQuestions } = require ('./inquirerFunctions');
 const connection = mysql.createConnection({
     user: 'root',  //'dbuser'
     password: 'bluesky55!', //'dbpass'
@@ -9,10 +10,10 @@ const connection = mysql.createConnection({
 });
 
 function allEmployeeQuery() {
-    connection.query(`SELECT employee.id, employee.first_name, department.name AS department, roles.title, CONCAT(mgr.first_name, ' ', mgr.last_name) AS manager
+    connection.query(`SELECT employee.id, employee.first_name, employee.last_name, department.title AS department, roles.title, CONCAT(mgr.first_name, ' ', mgr.last_name) AS manager
         FROM employee
         LEFT JOIN roles ON employee.role_id=roles.id 
-        LEFT JOIN departments ON roles.department_id=department.id
+        LEFT JOIN department ON roles.department_id=department.id
         LEFT JOIN employee mgr ON employee.manager_id=mgr.id;`,
         function(err, res) {
             console.log(cTable.getTable(res));
@@ -28,7 +29,7 @@ function allDepartmentQuery() {
 };
 
 function allRoleQuery() {
-    connection.query(`SELECT roles.id, roles.title, roles.salary, department.name AS department
+    connection.query(`SELECT roles.id, roles.title, roles.salary, department.title AS department
     FROM roles
     LEFT JOIN department
     ON roles.department_id = department.id`,
@@ -40,12 +41,12 @@ function allRoleQuery() {
 
 function addDepartment() {
     addDepartmentQuestions()
-    .then(newDep => {
-            connection.query(`INSERT INTO department (name)
+    .then(answer => {
+            connection.query(`INSERT INTO department (title)
             VALUES 
-            ('${newDep}')`, function(err, res) {
+            ('${answer.department}')`, function(err, res) {
                 if (err) throw err;
-                console.log('Successfully added new department!');
+                console.log('Successfully added new department!' + emoji.get('smile'));
         });
     }).catch(err => {
         if(err) throw err;
@@ -57,9 +58,9 @@ function addRole() {
     .then(answers => {
         connection.query(`INSERT INTO roles (title, salary, department_id)
         VALUES
-        ('${answers.title}', '${answers.salary}', '${answers.department})`, function(err, res) {
+        ('${answers.title}', '${answers.salary}', '${answers.department}')`, function(err, res) {
             if (err) throw err;
-            console.log('Role added successfuly!');
+            console.log('Role added successfuly!'  + emoji.get('smile'));
         });
     }).catch(err => {
         if(err) throw err;
@@ -73,7 +74,7 @@ function addEmployee() {
         VALUES
         ('${answers.firstName}', '${answers.lastName}', ${answers.role}, ${answers.manager})`, function(err, res) {
             if (err) throw err;
-            console.log('Employee added!');
+            console.log('Employee added!'  + emoji.get('smile'));
         });  
     }).catch(err => {
         if (err) throw err;
@@ -86,12 +87,11 @@ function updateEmployeeRole() {
         connection.query(`UPDATE employee
         SET
         role_id = ${answers.role}
-        manager_id = ${answers.manager}
         WHERE id = ${answers.id}`, function(err, res) {
             if (err) throw err;
-            console.log('Updated!');
+            console.log('Updated!'  + emoji.get('smile'));
         });
-    }).catche(err => {
+    }).catch(err => {
         if (err) throw err;
     })
 };
@@ -125,9 +125,9 @@ function viewEmployeesByDepartment() {
 
 function deleteEmployee() {
     deleteEmployeeQuestions().then(answer => {
-        connection.query(`DELETE FROM employee WHERE id = ${answer}`, function(err, ans) {
+        connection.query(`DELETE FROM employee WHERE id = ${answer.id}`, function(err, ans) {
             if(err) throw err;
-            console.log('Successfully deleted');
+            console.log('Successfully deleted' + emoji.get('smile'));
         });
     });
 }

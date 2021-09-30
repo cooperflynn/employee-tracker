@@ -150,11 +150,6 @@ function updateRoleQuestions() {
                 type: 'input',
                 name: 'role',
                 message: 'Enter new role:'
-            },
-            {
-                type: 'input',
-                name: 'manager',
-                message: "Enter employee's new manager"
             }
         ]).then(answers => res(answers)).catch(err => rej(err));
     });

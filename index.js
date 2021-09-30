@@ -1,6 +1,8 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2/promise');
 const cTable = require('console.table');
+const figlet = require('figlet');
+const colors = require('colors');
 const { firstQuestion } = require('./utils/inquirerFunctions');
 const { allEmployeeQuery, allDepartmentQuery, allRoleQuery, addDepartment, addRole, addEmployee, updateEmployeeRole, viewEmployeesByManager, viewEmployeesByDepartment, deleteEmployee } = require('./utils/queries');
 
@@ -11,6 +13,8 @@ const connection = mysql.createConnection ({
     database: 'mydb', //'userdb'
     port: '/tmp/mysql.sock'
 });
+
+console.log((figlet.textSync('Employee Tracker', {horisontallayout:'full'})).bold.green);
 
 const promptUser = () => {
     firstQuestion().then(answer => {
